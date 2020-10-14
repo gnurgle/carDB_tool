@@ -4,9 +4,7 @@ import datetime
 import sqlite3 as sql
 import xml.etree.ElementTree as ET
 
-def import_json():
-	ymme = [ "year", "make", "model", "engine" ]
-	
+def import_data():
 	#build DB
 	setup_db()
 	
@@ -80,5 +78,5 @@ def setup_db():
 
 #Run as main if appliciable
 if __name__ == '__main__':
-	import_json()
+	import_data()
 
