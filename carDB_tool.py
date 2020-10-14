@@ -1,6 +1,4 @@
 import requests
-import json
-import datetime
 import sqlite3 as sql
 import xml.etree.ElementTree as ET
 
@@ -16,13 +14,10 @@ def import_data():
 	
 	#access avaliable years
 	currUrl = baseUrl + 'year'
-	print(currUrl)
 	
 	#Fetch XML data
 	ret = requests.get(currUrl)
-	print(ret.status_code)
 	root = ET.fromstring(ret.content)
-	print (root)
 	
 	for menuItem in root.findall('menuItem'):
 		txt_year = menuItem.find('text').text
@@ -46,10 +41,15 @@ def import_data():
 				root_engine = ET.fromstring(response_engine.content)
 				for menuItem in root_engine.findall('menuItem'):
 					txt_engine = menuItem.find('text').text
+					
+					#Check if no gas Engine listed (in case of EV), replace w "Electric"
+					if not txt_engine:
+						txt_engine = "Electric"
 					#Print Item recieved
 					print (txt_year + " " + txt_make + " " + txt_model + " " + txt_engine)	
 					#Write to DB
 					add_entry(txt_year,txt_make,txt_model,txt_engine)
+					
 #text to http compatible
 def t2h(string):
 	return (string.replace(' ', "%20"))
@@ -60,7 +60,7 @@ def add_entry(year, make, model, engine):
 	con = sql.connect("base_car.db")
 	cur=con.cursor()
 
-	#insert values into DB
+	#insert values into DB, Ignore Duplicates
 	cur.execute("INSERT OR IGNORE INTO Menu (Year, Make, Model, Engine) VALUES(?,?,?,?)",(year,make,model,engine) )
 	try :
 		con.commit()
